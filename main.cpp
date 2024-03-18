@@ -20,34 +20,51 @@ void command(char* line, int thread_num){
     char delimiter[] = " ";
     char *command_line;
 
+    //command_line holds the operation we want to do (O,D,W,B,Q,T)
     command_line = strtok(line, delimiter);
-    cout << "command0: " << command_line[0] << "command1: " << command_line[1] << "command2: " << command_line[2] << endl;
-    int account = string_to_number(&command_line[1]);
-    int password = string_to_number(&command_line[2]);
+    int operation = string_to_number(&command_line);
+    cout << "operation: " << operation << endl;
+    //command_line holds the account number
+    command_line = strtok(NULL, delimiter);
+    int account = string_to_number(&command_line);
+    cout << "account: " << account << endl;
+    //command_line holds the password for the account
+    command_line = strtok(NULL, delimiter);
+    int password = string_to_number(&command_line);
+    cout << "password: " << password << endl;
 
-    cout << "Account: " << account << "password: " << password << endl;
     // executing ATM functions
-    if(command_line[0] == 'O'){
-        int initial_amount = string_to_number(&command_line[3]);
+    if(operation == 'O'){
+        //command_line holds the initial amount to open an account
+        command_line = strtok(NULL, delimiter);
+        int initial_amount = string_to_number(&command_line);
         create_account(account, password, initial_amount, thread_num);
     }
-    else if(command_line[0] == 'D'){
-        int amount = string_to_number(&command_line[3]);
+    else if(operation == 'D'){
+        //command_line holds the amount to deposit
+        command_line = strtok(NULL, delimiter);
+        int amount = string_to_number(&command_line);
         deposit_to_account(account, password, amount, thread_num);
     }
-    else if(command_line[0] == 'W'){
-        int amount = string_to_number(&command_line[3]);
+    else if(operation == 'W'){
+        //command_line holds the amount to withdraw
+        command_line = strtok(NULL, delimiter);
+        int amount = string_to_number(&command_line);
         withdraw_from_account(account, password, amount, thread_num);
     }
-    else if(command_line[0] == 'B'){
+    else if(operation == 'B'){
         check_balance(account, password, thread_num);
     }
-    else if(command_line[0] == 'Q'){
+    else if(operation == 'Q'){
         close_account(account, password, thread_num);
     }
-    else if(command_line[0] == 'T'){
-        int target_account = string_to_number(&command_line[3]);
-        int amount = string_to_number(&command_line[4]);
+    else if(operation == 'T'){
+        //command_line holds the target account number for the transfer
+        command_line = strtok(NULL, delimiter);
+        int target_account = string_to_number(&command_line);
+        //command_line holds the amount to transfer
+        command_line = strtok(NULL, delimiter);
+        int amount = string_to_number(&command_line);
         transfer(account, password, target_account, amount, thread_num);
     }
 }
