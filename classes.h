@@ -6,6 +6,7 @@ using namespace std;
 #include <string>
 #include <pthread.h>
 #include <iostream>
+#include <fstream>
 
 
 class Account{
@@ -15,7 +16,7 @@ public:
     int password;
     pthread_mutex_t read_account;
     pthread_mutex_t write_account;
-    pthread_mutex_t log;
+    //pthread_mutex_t log;
     int account_readers;
 
     // Creating new account
@@ -26,17 +27,23 @@ public:
         account_readers = 0;
         int read_init = pthread_mutex_init(&read_account, NULL);
         int write_init = pthread_mutex_init(&write_account, NULL);
-        int log_init = pthread_mutex_init(&log, NULL);
-        if(read_init || write_init || log_init){
-            /***** What should we do if init failed?
-             * ********************************????????????????????????????????????????????????????????????????????????????*************/
+        //int log_init = pthread_mutex_init(&log, NULL);
+        if(read_init || write_init){    // || log_init
+            //problem initializing at least one of the mutex locks
+            perror("Bank error: pthread_mutex_init failed\n");
+            exit(-1);
         }
     }
 
     ~Account(){
-        pthread_mutex_destroy(&read_account);
-        pthread_mutex_destroy(&write_account);
-        pthread_mutex_destroy(&log);
+        int destroy_read_account = pthread_mutex_destroy(&read_account);
+        int destroy_write_account = pthread_mutex_destroy(&write_account);
+        //int destroy_log = pthread_mutex_destroy(&log);
+        if(destroy_read_account || destroy_write_account){  // || destroy_log
+            //problem destroying at least one of the mutex locks
+            perror("Bank error: pthread_mutex_destroy failed\n");
+            exit(-1);
+        }
     }
 };
 
@@ -52,25 +59,35 @@ public:
     Bank(){
         bank_balance = 0;
         bank_readers = 0;
-        pthread_mutex_init(&read_bank, NULL);
-        pthread_mutex_init(&write_bank, NULL);
+        int read_init = pthread_mutex_init(&read_bank, NULL);
+        int write_init = pthread_mutex_init(&write_bank, NULL);
+        if(read_init || write_init){
+            //problem initializing at least one of the mutex locks
+            perror("Bank error: pthread_mutex_init failed\n");
+            exit(-1);
+        }
     }
 
     ~Bank(){
-        pthread_mutex_destroy(&read_bank);
-        pthread_mutex_destroy(&write_bank);
+        int destroy_read_bank = pthread_mutex_destroy(&read_bank);
+        int destroy_write_bank = pthread_mutex_destroy(&write_bank);
+        if(destroy_read_bank || destroy_write_bank){
+            //problem destroying at least one of the mutex locks
+            perror("Bank error: pthread_mutex_destroy failed\n");
+            exit(-1);
+        }
     }
 };
 
 
 class thread_args{
 public:
-    const char* filename;
+    string filename;
     int thread_id;
 
-    thread_args(const char* file, int id){
-        filename = file;
-        thread_id = id;
+    thread_args(){
+        filename = "";
+        thread_id = -1;
     }
 
     ~thread_args(){}
@@ -78,5 +95,7 @@ public:
 
 Bank bank;
 pthread_mutex_t write_log; // shared mutex for all threads that ensures safe printing to log
+ofstream log_file;  //creating log file
+
 
 #endif
