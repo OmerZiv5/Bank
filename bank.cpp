@@ -8,10 +8,11 @@ using namespace std;
 #include <cstdlib>
 #include <cmath>
 
+bool ATMs_finished = false;
 
 void* bank_status(void* null){
     while(1){
-        sleep(0.5);
+        usleep(500000);
 
         pthread_mutex_lock(&bank.read_bank);
         bank.bank_readers++;
@@ -48,6 +49,10 @@ void* bank_status(void* null){
             pthread_mutex_unlock(&bank.write_bank);
         }
         pthread_mutex_unlock(&bank.read_bank);
+
+        if(ATMs_finished){
+            break;
+        }
     }
 
     pthread_exit(nullptr);
@@ -80,7 +85,7 @@ void* charge_fee(void *null){
             total_fee += fee;
             pthread_mutex_lock(&write_log);
 
-            cout << "Bank: commissions of " << random_percent << " % were charged, the bank gained " << fee << " $ from account " << it->account_num << endl;
+            log_file << "Bank: commissions of " << (random_percent*100) << " % were charged, the bank gained " << fee << " $ from account " << it->account_num << endl;
 
             pthread_mutex_unlock(&write_log);
         }
@@ -93,6 +98,10 @@ void* charge_fee(void *null){
             pthread_mutex_unlock(&bank.write_bank);
         }
         pthread_mutex_unlock(&bank.read_bank);
+
+        if(ATMs_finished){
+            break;
+        }
     }
 
     pthread_exit(nullptr);
